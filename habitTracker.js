@@ -41,23 +41,21 @@ const today = new Date();
 const todayKey = today.toISOString().slice(0, 10);
 
 if (!config.runsInWidget) {
-    const notification = new Notification();
-    notification.title = `📌 ${HABIT_NAME}`;
-    notification.body = "Tap to log one entry for today.";
-    notification.sound = "default";
-    notification.addAction("Log Today’s Entry", "log");
-    notification.addCancelAction("Dismiss");
+  const notification = new Notification();
+  notification.title = `📌 ${HABIT_NAME}`;
+  notification.body = "Tap to log one entry for today.";
+  notification.sound = "default";
+  notification.addAction("Log Today’s Entry", "log");
 
-    const result = await notification.schedule();
-    if (result === "log") {
-        data[todayKey] = (data[todayKey] || 0) + 1;
-        fm.writeString(path, JSON.stringify(data));
-        console.log(`Logged 1 ${HABIT_NAME} for today.`);
-    } else {
-        console.log("Logging skipped.");
-    }
+  const result = await notification.schedule();
+  if (result === "log") {
+    data[todayKey] = (data[todayKey] || 0) + 1;
+    fm.writeString(path, JSON.stringify(data));
+    console.log(`Logged 1 ${HABIT_NAME} for today.`);
+  } else {
+    console.log("Logging skipped.");
+  }
 }
-
 
 // =====================
 // BUILD WIDGET
