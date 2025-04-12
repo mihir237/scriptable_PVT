@@ -18,7 +18,7 @@ const COLOR_MAP = [
     new Color("#b91c1c")     // 6+ - intense red
 ];
 
-const DOT_CHAR_MAP = ["○", "◔", "◑", "●", "⬤"];
+const DOT_CHAR_MAP = ["○", "◔", "◑", "●", "●"];
 
 // =====================
 // DATA HANDLING
@@ -66,13 +66,13 @@ const widget = new ListWidget();
 widget.setPadding(4, 4, 4, 4);
 widget.backgroundColor = Color.white();
 
-const CIRCLE_SIZE = 12;
-const CIRCLE_SPACING = 1;
+const CIRCLE_SIZE = 10;
+const CIRCLE_SPACING = 4;
 const DOT_FONT = Font.systemFont(CIRCLE_SIZE);
 
 const gridContainer = widget.addStack();
 gridContainer.layoutVertically();
-gridContainer.spacing = 1;
+gridContainer.spacing = 2;
 
 // Generate dot grid
 for (let row = 0; row < GRID_ROWS; row++) {
@@ -99,7 +99,7 @@ for (let row = 0; row < GRID_ROWS; row++) {
     }
 }
 
-widget.addSpacer(8);
+widget.addSpacer(18);
 
 // =====================
 // FOOTER
@@ -108,8 +108,8 @@ const totalEntries = Object.values(data).reduce((a, b) => a + b, 0);
 const todayEntries = data[todayKey] || 0;
 
 const footer = widget.addText(`${HABIT_NAME}: Today ${todayEntries} • Total ${totalEntries}`);
-footer.font = Font.mediumSystemFont(12);
-footer.textColor = new Color("#666");
+footer.font = Font.mediumSystemFont(10);
+footer.textColor = new Color("#fff");
 
 // =====================
 // PRESENT
