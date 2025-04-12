@@ -4,18 +4,18 @@
 // CONFIGURATION
 // =====================
 const HABIT_NAME = "Bad Habit";
-const GRID_COLUMNS = 14; // Wider for 2x1 layout
-const GRID_ROWS = 4;
+const GRID_COLUMNS = 7; // Wider for 2x1 layout
+const GRID_ROWS = 5;
 const TOTAL_DAYS = GRID_COLUMNS * GRID_ROWS;
 const DATA_FILE = "habit-heatmap-data.json";
 
 // Dot intensity colors and characters
 const COLOR_MAP = [
-  new Color("#e5e7eb"),    // 0 - light gray
-  new Color("#fca5a5"),    // 1
-  new Color("#f87171"),    // 2
-  new Color("#ef4444"),    // 3+
-  new Color("#b91c1c")     // 6+ - intense red
+    new Color("#e5e7eb"),    // 0 - light gray
+    new Color("#fca5a5"),    // 1
+    new Color("#f87171"),    // 2
+    new Color("#ef4444"),    // 3+
+    new Color("#b91c1c")     // 6+ - intense red
 ];
 
 const DOT_CHAR_MAP = ["○", "◔", "◑", "●", "⬤"];
@@ -29,34 +29,35 @@ const path = fm.joinPath(dir, DATA_FILE);
 
 let data = {};
 if (fm.fileExists(path)) {
-  try {
-    data = JSON.parse(fm.readString(path));
-  } catch {
-    console.log("Invalid JSON. Resetting data.");
-    data = {};
-  }
+    try {
+        data = JSON.parse(fm.readString(path));
+    } catch {
+        console.log("Invalid JSON. Resetting data.");
+        data = {};
+    }
 }
 
 const today = new Date();
 const todayKey = today.toISOString().slice(0, 10);
 
-// Logging via alert if run manually
 if (!config.runsInWidget) {
-  const alert = new Alert();
-  alert.title = `Did you do "${HABIT_NAME}"?`;
-  alert.message = "Tap ‘Yes’ every time you do it today.";
-  alert.addAction("Yes");
-  alert.addCancelAction("Cancel");
+    const notification = new Notification();
+    notification.title = `📌 ${HABIT_NAME}`;
+    notification.body = "Tap to log one entry for today.";
+    notification.sound = "default";
+    notification.addAction("Log Today’s Entry", "log");
+    notification.addCancelAction("Dismiss");
 
-  const response = await alert.presentAlert();
-  if (response === 0) {
-    data[todayKey] = (data[todayKey] || 0) + 1;
-    fm.writeString(path, JSON.stringify(data));
-    console.log(`Logged 1 ${HABIT_NAME} for today.`);
-  } else {
-    console.log("Logging canceled.");
-  }
+    const result = await notification.schedule();
+    if (result === "log") {
+        data[todayKey] = (data[todayKey] || 0) + 1;
+        fm.writeString(path, JSON.stringify(data));
+        console.log(`Logged 1 ${HABIT_NAME} for today.`);
+    } else {
+        console.log("Logging skipped.");
+    }
 }
+
 
 // =====================
 // BUILD WIDGET
@@ -75,27 +76,27 @@ gridContainer.spacing = 1;
 
 // Generate dot grid
 for (let row = 0; row < GRID_ROWS; row++) {
-  const rowStack = gridContainer.addStack();
-  rowStack.layoutHorizontally();
-  rowStack.spacing = CIRCLE_SPACING;
+    const rowStack = gridContainer.addStack();
+    rowStack.layoutHorizontally();
+    rowStack.spacing = CIRCLE_SPACING;
 
-  for (let col = 0; col < GRID_COLUMNS; col++) {
-    const i = row * GRID_COLUMNS + col;
-    const day = new Date();
-    day.setDate(today.getDate() - (TOTAL_DAYS - 1 - i));
-    const dayKey = day.toISOString().slice(0, 10);
-    const count = data[dayKey] || 0;
+    for (let col = 0; col < GRID_COLUMNS; col++) {
+        const i = row * GRID_COLUMNS + col;
+        const day = new Date();
+        day.setDate(today.getDate() - (TOTAL_DAYS - 1 - i));
+        const dayKey = day.toISOString().slice(0, 10);
+        const count = data[dayKey] || 0;
 
-    let level = 0;
-    if (count >= 6) level = 4;
-    else if (count >= 3) level = 3;
-    else if (count >= 2) level = 2;
-    else if (count >= 1) level = 1;
+        let level = 0;
+        if (count >= 6) level = 4;
+        else if (count >= 3) level = 3;
+        else if (count >= 2) level = 2;
+        else if (count >= 1) level = 1;
 
-    const dot = rowStack.addText(DOT_CHAR_MAP[level]);
-    dot.font = DOT_FONT;
-    dot.textColor = COLOR_MAP[level];
-  }
+        const dot = rowStack.addText(DOT_CHAR_MAP[level]);
+        dot.font = DOT_FONT;
+        dot.textColor = COLOR_MAP[level];
+    }
 }
 
 widget.addSpacer(8);
@@ -114,8 +115,8 @@ footer.textColor = new Color("#666");
 // PRESENT
 // =====================
 if (config.runsInWidget) {
-  Script.setWidget(widget);
+    Script.setWidget(widget);
 } else {
-  await widget.presentMedium(); // 2x1 layout
+    await widget.presentMedium(); // 2x1 layout
 }
 Script.complete();
