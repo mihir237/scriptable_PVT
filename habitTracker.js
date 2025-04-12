@@ -3,11 +3,14 @@
 // =====================
 // CONFIGURATION
 // =====================
-const HABIT_NAME = "Bad Habit";
+const HABIT_NAME = "Bad";
 const GRID_COLUMNS = 7; // Wider for 2x1 layout
 const GRID_ROWS = 5;
 const TOTAL_DAYS = GRID_COLUMNS * GRID_ROWS;
 const DATA_FILE = "habit-heatmap-data.json";
+// Background overlay color and opacity
+const BG_COLOR = "#406260";       // Overlay color in hex format
+const BG_OVERLAY_OPACITY = 0.5;   // Overlay opacity (0-1)
 
 // Dot intensity colors and characters
 const COLOR_MAP = [
@@ -40,29 +43,39 @@ if (fm.fileExists(path)) {
 const today = new Date();
 const todayKey = today.toISOString().slice(0, 10);
 
+// Logging via alert if run manually
 if (!config.runsInWidget) {
-  const notification = new Notification();
-  notification.title = `📌 ${HABIT_NAME}`;
-  notification.body = "Tap to log one entry for today.";
-  notification.sound = "default";
-  notification.addAction("Log Today’s Entry", "log");
+  const alert = new Alert();
+  alert.title = Did you do "${HABIT_NAME}"?;
+  alert.message = "Tap ‘Yes’ every time you do it today.";
+  alert.addAction("Yes");
+  alert.addCancelAction("Cancel");
 
-  const result = await notification.schedule();
-  if (result === "log") {
+  const response = await alert.presentAlert();
+  if (response === 0) {
     data[todayKey] = (data[todayKey] || 0) + 1;
     fm.writeString(path, JSON.stringify(data));
-    console.log(`Logged 1 ${HABIT_NAME} for today.`);
+    console.log(Logged 1 ${HABIT_NAME} for today.);
   } else {
-    console.log("Logging skipped.");
+    console.log("Logging canceled.");
   }
 }
+
 
 // =====================
 // BUILD WIDGET
 // =====================
 const widget = new ListWidget();
 widget.setPadding(4, 4, 4, 4);
-widget.backgroundColor = Color.white();
+
+const overlay = new LinearGradient();
+overlay.locations = [0, 1];
+overlay.colors = [
+    new Color(BG_COLOR, BG_OVERLAY_OPACITY),
+    new Color(BG_COLOR, BG_OVERLAY_OPACITY)
+];
+widget.backgroundGradient = overlay;
+
 
 const CIRCLE_SIZE = 10;
 const CIRCLE_SPACING = 4;
@@ -105,7 +118,7 @@ widget.addSpacer(18);
 const totalEntries = Object.values(data).reduce((a, b) => a + b, 0);
 const todayEntries = data[todayKey] || 0;
 
-const footer = widget.addText(`${HABIT_NAME}: Today ${todayEntries} • Total ${totalEntries}`);
+const footer = widget.addText(Today ${todayEntries} • Total ${totalEntries});
 footer.font = Font.mediumSystemFont(10);
 footer.textColor = new Color("#fff");
 
